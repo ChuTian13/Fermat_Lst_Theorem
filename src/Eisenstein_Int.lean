@@ -1,5 +1,6 @@
 import data.nat.basic
 import data.int.nat_prime
+import data.rat.basic
 import data.complex.basic
 import tactic
 import data.real.basic
@@ -9,6 +10,7 @@ import ring_theory.roots_of_unity
 import algebra.ring 
 import algebra.euclidean_domain
 import algebra.associated
+import algebra.algebra.ordered
 
 lemma h1_lt_3 : 1 < 3 
 := by norm_num
@@ -817,16 +819,16 @@ end
 
 /-quotient-/
 def quotient: ℤ_ζ → ℤ_ζ → ℤ_ζ | ⟨x, y⟩ ⟨x', y'⟩ 
-       := ⟨round ((x * x' - x * y' - y * y' : ℚ)/(x'^2 - x' * y' + y'^2 : ℚ)), 
+       := ⟨round ((x * x' - x * y' + y * y' : ℚ)/(x'^2 - x' * y' + y'^2 : ℚ)), 
           round ((-x * y' + x' * y : ℚ)/(x'^2 - x' * y' + y'^2 : ℚ))⟩ 
 lemma quotient_def (x y x' y': ℤ) : quotient ⟨x, y⟩ ⟨x', y'⟩  = 
-          ⟨round ((x * x' - x * y' - y * y' : ℚ)/(x'^2 - x' * y' + y'^2 : ℚ)), 
+          ⟨round ((x * x' - x * y' + y * y' : ℚ)/(x'^2 - x' * y' + y'^2 : ℚ)), 
           round ((-x * y' + x' * y : ℚ)/(x'^2 - x' * y' + y'^2 : ℚ))⟩  := rfl
 
 lemma div_zero (n : ℤ_ζ): quotient n 0 = 0 := 
 begin 
-have h1: round ((n.a * 0 - n.a * 0 - n.b * 0 : ℚ)/(0^2 - 0 * 0 + 0^2 : ℚ)) = 0,
-calc round ((n.a * 0 - n.a * 0 - n.b * 0 : ℚ)/(0^2 - 0 * 0 + 0^2 : ℚ)) 
+have h1: round ((n.a * 0 - n.a * 0 + n.b * 0 : ℚ)/(0^2 - 0 * 0 + 0^2 : ℚ)) = 0,
+calc round ((n.a * 0 - n.a * 0 + n.b * 0 : ℚ)/(0^2 - 0 * 0 + 0^2 : ℚ)) 
                     = round ((0 : ℚ)/(0 : ℚ))  : by norm_num 
        ...          = 0                         : by norm_num,
 have h2: round ((-n.a * 0 + 0 * n.b : ℚ)/(0^2 - 0 * 0 + 0 ^2 : ℚ)) = 0,
@@ -835,7 +837,7 @@ calc round ((-n.a * 0 + 0 * n.b : ℚ)/(0^2 - 0 * 0 + 0 ^2 : ℚ))
      ...          = 0             : by norm_num,
 calc quotient n 0 = quotient ⟨n.a, n.b⟩ 0  : by rw eql n 
             ...   = quotient ⟨n.a, n.b⟩ ⟨0, 0⟩  : rfl 
-            ...   = ⟨round ((n.a * 0 - n.a * 0 - n.b * 0 : ℚ)/(0^2 - 0 * 0 + 0^2 : ℚ)), 
+            ...   = ⟨round ((n.a * 0 - n.a * 0 + n.b * 0 : ℚ)/(0^2 - 0 * 0 + 0^2 : ℚ)), 
                     round ((-n.a * 0 + 0 * n.b : ℚ)/(0^2 - 0 * 0 + 0 ^2 : ℚ))⟩  : by exact quotient_def n.a n.b 0 0
             ...   = ⟨0, 0⟩          : by rw [h1,h2]
             ...   = (0: ℤ_ζ)       : rfl,
@@ -1036,7 +1038,7 @@ theorem ext : ∀ {z w : ℚ_ζ }, z = w ↔ z.c = w.c ∧ z.d = w.d
 
 
 def of_eisen_int(x : ℤ_ζ) : ℚ_ζ := ⟨(x.a : ℚ), (x.b : ℚ)⟩ 
-theorem of_eisen_int_def: ∀ x y : ℤ, of_eisen_int ⟨x, y⟩ = ⟨x, y⟩ := 
+theorem of_eisen_int_def: ∀ x y : ℤ, of_eisen_int ⟨x, y⟩ = ⟨(x : ℚ), (y : ℚ)⟩ := 
 begin
      intros x y,
      try{refl},
@@ -1099,41 +1101,181 @@ instance : has_mul ℚ_ζ := ⟨ra_cubic_root.mul⟩
 @[simp] theorem mul_d : ∀ z w : ℚ_ζ, (z * w).d = z.c * w.d + z.d * w.c - z.d * w.d
 | ⟨x, y⟩ ⟨x', y'⟩ := rfl
 
-/-quotient in ℚ_ζ-/
-def div: ℚ_ζ → ℚ_ζ → ℚ_ζ
-| ⟨x, y⟩ ⟨x', y'⟩ := ⟨(x * x' - x * y' - y * y')/(x'^2 - x' * y' + y'^2), 
-                    (-x * y' + x' * y)/(x'^2 - x' * y' + y'^2)⟩ 
-instance : has_div ℚ_ζ := ⟨ra_cubic_root.div⟩
-@[simp] theorem div_def(x y x' y' : ℚ) : 
-   (⟨x, y⟩ / ⟨x', y'⟩ : ℚ_ζ) = ⟨(x * x' - x * y' - y * y')/(x'^2 - x' * y' + y'^2), 
-                    (-x * y' + x' * y)/(x'^2 - x' * y' + y'^2)⟩ := rfl 
-@[simp] theorem div_a : ∀ z w : ℚ_ζ, (z / w).c = (z.c * w.c - z.c * w.d - z.d * w.d)/(w.c^2 - w.c * w.d + w.d^2)
-| ⟨x, y⟩ ⟨x', y'⟩ := rfl
-@[simp] theorem div_b : ∀ z w : ℚ_ζ, (z / w).d = (-z.c * w.d + w.c * z.d)/(w.c^2 - w.c * w.d + w.d^2)
-| ⟨x, y⟩ ⟨x', y'⟩ := rfl
-
 /- z = ⟨z.a, z.b⟩; notations-/
-theorem eql(z : ℚ_ζ) : z = ⟨z.c, z.d⟩ :=
+theorem eql0(z : ℚ_ζ) : z = ⟨z.c, z.d⟩ :=
 begin 
      have h1 : z.c = (⟨z.c, z.d⟩ : ℚ_ζ).c, refl,
      have h2 : z.d = (⟨z.c, z.d⟩ : ℚ_ζ).d, refl,
      exact ext.mpr ⟨h1, h2⟩,
 end
 
+example (a b c d e: ℚ) : a * (b / c) + d * (e / c) = (a * b + d * e)/ c :=
+begin
+     ring,
+end
+
+/-norm-/
+def norm1 (a : ℚ_ζ) : ℚ := a.c * a.c - a.c * a.d + a.d * a.d
+@[simp] lemma norm1_def (a b : ℚ) : (⟨a, b⟩ : ℚ_ζ).norm1 = a * a - a * b + b * b  := 
+by try {refl}
+
+@[simp] theorem norm1_nonneg : ∀ x : ℚ_ζ, norm1 x ≥ 0 :=
+begin
+     intro x,
+     calc norm1 x  = x.c * x.c - x.c * x.d + x.d * x.d   : by refl
+           ...   ≥ 0                                     : by nlinarith,
+end
+@[simp] theorem norm1_nezero : ∀ x : ℚ_ζ, x ≠ 0 → x.norm1 > 0 := 
+begin
+     intros x h,
+     have h1 : 4 * x.norm1 > 0, 
+     begin
+     have h2 : x.c ≠ 0 ∨ x.d ≠ 0, by {contrapose! h, simp[ext], exact h,},
+     cases h2,
+     {have h3: x.c^2 > 0, by exact pow_two_pos_of_ne_zero x.c h2,
+     calc 4 * x.norm1 = 4 * (x.c * x.c - x.c * x.d + x.d * x.d)  :  by refl 
+              ...     = (2 * x.d - x.c)^2 + 3 * x.c^2            :  by ring 
+              ...     > (2 * x.d - x.c)^2 + 3 * 0                :  by nlinarith[h3]
+              ...     = (2 * x.d - x.c)^2                        :  by norm_num
+              ...     ≥ 0                                        :  by nlinarith,},
+     {have h3: x.d^2 > 0, by exact pow_two_pos_of_ne_zero x.d h2,
+     calc 4 * x.norm1 = 4 * (x.c * x.c - x.c * x.d + x.d * x.d)  :  by refl 
+              ...     = (2 * x.c - x.d)^2 + 3 * x.d^2            :  by ring 
+              ...     > (2 * x.c - x.d)^2 + 3 * 0                :  by nlinarith[h3]
+              ...     = (2 * x.c - x.d)^2                        :  by norm_num
+              ...     ≥ 0                                        :  by nlinarith,},
+     end,
+     nlinarith[h1],
+end
+
+@[simp] lemma norm1_mul : ∀ x y : ℚ_ζ, (x * y).norm1 = x.norm1 * y.norm1 := 
+begin
+intros x y,
+have h1: x.norm1 = (x.c)^2 - x.c * x.d + (x.d)^2, 
+calc x.norm1 = x.c * x.c - x.c * x.d + x.d * x.d  : rfl
+        ... =  (x.c)^2 - x.c * x.d + (x.d)^2     : by ring,
+have h2: y.norm1 = (y.c)^2 - y.c * y.d + (y.d)^2, 
+calc y.norm1 = y.c * y.c - y.c * y.d + y.d * y.d  : rfl
+        ... =  (y.c)^2 - y.c * y.d + (y.d)^2     : by ring,
+have h3: (x * y).norm1 = (x.c * y.c - x.d * y.d)^2 - (x.c * y.c - x.d* y.d) * (x.c * y.d + x.d * y.c - x.d * y.d)
+                       + (x.c * y.d + x.d * y.c - x.d * y.d)^2,
+calc (x * y : ℚ_ζ).norm1 = (⟨x.c, x.d⟩ * ⟨y.c, y.d⟩ : ℚ_ζ).norm1                                : by rw [eql0 x, eql0 y]
+          ...   = (⟨x.c * y.c - x.d * y.d, x.c * y.d + x.d * y.c - x.d * y.d⟩ : ℚ_ζ).norm1 : rfl 
+          ...   = ((x.c * y.c - x.d * y.d) * (x.c * y.c - x.d * y.d)  
+                       - (x.c * y.c - x.d* y.d) * (x.c * y.d + x.d * y.c - x.d * y.d)
+                       + (x.c * y.d + x.d * y.c - x.d * y.d) * (x.c * y.d + x.d * y.c - x.d * y.d))    : rfl
+          ...   = ((x.c * y.c - x.d * y.d)^2  - (x.c * y.c - x.d * y.d) * (x.c * y.d + x.d * y.c - x.d * y.d)
+                       + (x.c * y.d + x.d * y.c - x.d * y.d)^2)                         : by ring,
+have t : x.norm1 * y.norm1 = (x * y).norm1,
+calc x.norm1 * y.norm1 = ((x.c)^2 - x.c * x.d + (x.d)^2)* ((y.c)^2 - y.c * y.d + (y.d)^2) : by rw [h1, h2]
+             ...     = ((x.c * y.c - x.d * y.d)^2 - (x.c * y.c - x.d * y.d) * (x.c * y.d + x.d * y.c - x.d * y.d)
+                       + (x.c * y.d + x.d * y.c - x.d * y.d)^2)                         : by ring 
+             ...     = (x * y).norm1                                                    : by rw h3,
+rw t,
+end
+
+lemma norm_lt_1: ∀ x : ℚ_ζ, abs x.c ≤ 1/2 ∧ abs x.d ≤ 1/2 → x.norm1 < 1 :=
+begin
+     intros x h,
+     have a0: (1/2 : ℚ) > 0,  by norm_num,
+     have a01 : (1/2 : ℚ) ≥ 0, by norm_num,
+     have a1: abs(abs x.c) ≤ abs (1/2), 
+     calc abs(abs x.c) = abs (x.c)      : by exact abs_abs x.c
+                 ...   ≤ (1/2 : ℚ)      : by exact h.1 
+                 ...   = abs(1/2)       : by rw abs_of_pos a0,
+     have a2 : abs(abs x.d) ≤ abs(1/2),
+     calc abs(abs x.d) = abs(x.d)       :  by exact abs_abs x.d 
+                 ...   ≤ (1/2 : ℚ)     :  by exact h.2 
+                 ...   = abs(1/2)       : by rw abs_of_pos a0,
+     have h1: x.c^2 + (-x.c * x.d + x.d^2) = x.c^2 - x.c * x.d + x.d^2, by ring,
+     have h2: abs (x.c^2) ≤ 1/4, 
+     calc abs (x.c^2) = (abs x.c)^2     :  by exact abs_pow x.c 2 
+                ...   ≤ (1/2)^2         :  by exact sq_le_sq a1
+                ...   = 1/4             :  by norm_num,
+     have h3: abs (-x.c * x.d) ≤ 1/4, 
+     calc abs (-x.c * x.d) = abs (x.c) * abs (x.d) : by rw [abs_mul, abs_neg]
+                   ...     ≤  (1/2) * (1/2)  :  by exact mul_le_mul h.1 h.2 (abs_nonneg x.d) a01
+                   ...     = 1/4         :  by norm_num,
+     have h4: abs (x.d^2) ≤ 1/4,  
+     calc abs(x.d^2) = (abs x.d)^2      :  by exact abs_pow x.d 2
+                ...   ≤ (1/2)^2         :  by exact sq_le_sq a2 
+                ...   = 1/4             :  by norm_num,
+     calc x.norm1 = x.c * x.c - x.c * x.d + x.d * x.d       : rfl
+             ... ≤ abs (x.c * x.c - x.c * x.d + x.d * x.d) : by exact le_abs_self (x.c * x.c - x.c * x.d + x.d * x.d)
+             ... = abs (x.c^2 - x.c * x.d + x.d^2)         : by ring_nf 
+             ... = abs (x.c^2 + (-x.c * x.d + x.d^2))      : by rw h1
+             ... ≤ abs (x.c^2) + abs (-x.c * x.d + x.d^2)  : by exact abs_add (x.c^2) (-x.c * x.d + x.d^2)
+             ... ≤ abs (x.c^2) + abs (-x.c * x.d) + abs (x.d^2) 
+                 : by linarith[abs_add (- x.c * x.d) (x.d^2)]
+             ... ≤ 1/4 + 1/4 + 1/4                         : by linarith[h2, h3, h4]
+             ... < 1                                       : by norm_num,
+end
+
+/-division in ℚ_ζ-/
+def div: ℚ_ζ → ℚ_ζ → ℚ_ζ
+| ⟨x, y⟩ ⟨x', y'⟩ := ⟨(x * x' - x * y' + y * y')/(x'^2 - x' * y' + y'^2), 
+                    (-x * y' + x' * y)/(x'^2 - x' * y' + y'^2)⟩ 
+instance : has_div ℚ_ζ := ⟨ra_cubic_root.div⟩
+@[simp] theorem div_def(x y x' y' : ℚ) : 
+   (⟨x, y⟩ / ⟨x', y'⟩ : ℚ_ζ) = ⟨(x * x' - x * y' + y * y')/(x'^2 - x' * y' + y'^2), 
+                    (-x * y' + x' * y)/(x'^2 - x' * y' + y'^2)⟩ := rfl 
+@[simp] theorem div_a : ∀ z w : ℚ_ζ, (z / w).c = (z.c * w.c - z.c * w.d + z.d * w.d)/(w.c^2 - w.c * w.d + w.d^2)
+| ⟨x, y⟩ ⟨x', y'⟩ := rfl
+@[simp] theorem div_b : ∀ z w : ℚ_ζ, (z / w).d = (-z.c * w.d + w.c * z.d)/(w.c^2 - w.c * w.d + w.d^2)
+| ⟨x, y⟩ ⟨x', y'⟩ := rfl
+@[simp] theorem div_mul : ∀ a b : ℚ_ζ, b ≠ 0 → b * (a / b) = a :=
+begin
+     intros a b h,
+     have s: b.c^2 - b.c * b.d + b.d^2 ≠ 0, {
+     have this : b.c^2 - b.c * b.d + b.d^2 > 0,
+     calc b.c^2 - b.c * b.d + b.d^2 = b.c * b.c - b.c * b.d + b.d * b.d: by ring
+                         ...        =  (⟨b.c, b.d⟩ : ℚ_ζ).norm1 : by rw norm1_def b.c b.d
+                         ...        =  b.norm1                 : rfl
+                         ...        > 0                        : by exact norm1_nezero b h,
+     nlinarith[this],},
+     have h1: b.c * ((a.c * b.c - a.c * b.d + a.d * b.d)/(b.c^2 - b.c * b.d + b.d^2)) 
+                       - b.d * ((-a.c * b.d + b.c * a.d)/(b.c^2 - b.c * b.d + b.d^2)) = a.c, 
+     calc b.c * ((a.c * b.c - a.c * b.d + a.d * b.d)/(b.c^2 - b.c * b.d + b.d^2)) 
+                       - b.d * ((-a.c * b.d + b.c * a.d)/(b.c^2 - b.c * b.d + b.d^2))
+              =  a.c * ((b.c^2 - b.c * b.d + b.d^2)/(b.c^2 - b.c * b.d + b.d^2)) : by ring 
+          ... =  a.c * ((b.c^2 - b.c * b.d + b.d^2)* (b.c^2 - b.c * b.d + b.d^2)⁻¹) : by try{refl}
+          ... =  a.c * 1: by rw mul_inv_cancel s
+          ... =  a.c    : by ring,
+     have h2: b.c * ((-a.c * b.d + b.c * a.d)/(b.c^2 - b.c * b.d + b.d^2)) 
+                       + b.d * ((a.c * b.c - a.c * b.d + a.d * b.d)/(b.c^2 - b.c * b.d + b.d^2))
+                       - b.d * ((-a.c * b.d + b.c * a.d)/(b.c^2 - b.c * b.d + b.d^2)) = a.d, 
+     calc b.c * ((-a.c * b.d + b.c * a.d)/(b.c^2 - b.c * b.d + b.d^2)) 
+                       + b.d * ((a.c * b.c - a.c * b.d + a.d * b.d)/(b.c^2 - b.c * b.d + b.d^2))
+                       - b.d * ((-a.c * b.d + b.c * a.d)/(b.c^2 - b.c * b.d + b.d^2)) 
+               = a.d * ((b.c^2 - b.c * b.d + b.d^2)/(b.c^2 - b.c * b.d + b.d^2))  : by ring
+          ...  = a.d * ((b.c^2 - b.c * b.d + b.d^2) * (b.c^2 - b.c * b.d + b.d^2)⁻¹) : by try {refl}
+          ...  = a.d * 1 : by rw mul_inv_cancel s
+          ...  = a.d     : by ring,
+     calc b * (a/b) = ⟨b.c, b.d⟩ * (⟨a.c, a.d⟩ / ⟨b.c, b.d⟩)    :  by rw [eql0 a, eql0 b] 
+              ...   = ⟨b.c, b.d⟩ * ⟨(a.c * b.c - a.c * b.d + a.d * b.d)/(b.c^2 - b.c * b.d + b.d^2),
+                                   (-a.c * b.d + b.c * a.d)/(b.c^2 - b.c * b.d + b.d^2)⟩  : rfl 
+              ...   = ⟨b.c * ((a.c * b.c - a.c * b.d + a.d * b.d)/(b.c^2 - b.c * b.d + b.d^2)) 
+                       - b.d * ((-a.c * b.d + b.c * a.d)/(b.c^2 - b.c * b.d + b.d^2)),
+                       b.c * ((-a.c * b.d + b.c * a.d)/(b.c^2 - b.c * b.d + b.d^2)) 
+                       + b.d * ((a.c * b.c - a.c * b.d + a.d * b.d)/(b.c^2 - b.c * b.d + b.d^2))
+                       - b.d * ((-a.c * b.d + b.c * a.d)/(b.c^2 - b.c * b.d + b.d^2))⟩  : rfl 
+              ...   = ⟨a.c, a.d⟩                               : by rw[h1, h2]
+              ...   = a                                       : by rw ← eql0 a,
+end
 @[simp] theorem zero_prop : (0 : ℚ_ζ).c = 0 ∧ (0 : ℚ_ζ).d = 0 := by exact ⟨zero_c, zero_d⟩
 @[simp] theorem zero_add (x : ℚ_ζ) : 0 + x = x := 
 begin
      simp[ext],
      split,
-     have h: 0 = (⟨0, 0⟩ : ℚ_ζ), by exact eql 0,
+     have h: 0 = (⟨0, 0⟩ : ℚ_ζ), by exact eql0 0,
      calc (0 + x).c = ((⟨0, 0⟩ : ℚ_ζ) + x).c         : by rw h
-             ...    = ((⟨0, 0⟩ : ℚ_ζ) + ⟨x.c, x.d⟩).c : by rw (eql x)   
+             ...    = ((⟨0, 0⟩ : ℚ_ζ) + ⟨x.c, x.d⟩).c : by rw (eql0 x)   
              ...    = (⟨0 + x.c, 0 + x.d⟩ : ℚ_ζ).c   : rfl 
              ...    = (⟨x.c, x.d⟩ : ℚ_ζ).c           : by norm_num  
              ...    = x.c                            : rfl,
-     have h1: 0 = (⟨0, 0⟩ : ℚ_ζ), by exact eql 0,
+     have h1: 0 = (⟨0, 0⟩ : ℚ_ζ), by exact eql0 0,
      calc (0 + x).d = ((⟨0, 0⟩ : ℚ_ζ) + x).d         : by rw h1
-             ...    = ((⟨0, 0⟩ : ℚ_ζ) + ⟨x.c, x.d⟩).d : by rw (eql x)   
+             ...    = ((⟨0, 0⟩ : ℚ_ζ) + ⟨x.c, x.d⟩).d : by rw (eql0 x)   
              ...    = (⟨0 + x.c, 0 + x.d⟩ : ℚ_ζ).d   : rfl 
              ...    = (⟨x.c, x.d⟩ : ℚ_ζ).d           : by norm_num  
              ...    = x.d                            : rfl,
@@ -1142,15 +1284,15 @@ end
 begin
      simp[ext],
      split,
-     have h: 0 = (⟨0, 0⟩ : ℚ_ζ), by exact eql 0,
+     have h: 0 = (⟨0, 0⟩ : ℚ_ζ), by exact eql0 0,
      calc (x + 0).c = (x + (⟨0, 0⟩ : ℚ_ζ)).c         : by rw h
-             ...    = ((⟨x.c, x.d⟩ + ⟨0, 0⟩ : ℚ_ζ)).c : by rw (eql x)   
+             ...    = ((⟨x.c, x.d⟩ + ⟨0, 0⟩ : ℚ_ζ)).c : by rw (eql0 x)   
              ...    = (⟨x.c + 0, x.d + 0⟩ : ℚ_ζ).c   : rfl 
              ...    = (⟨x.c, x.d⟩ : ℚ_ζ).c           : by norm_num  
              ...    = x.c                            : rfl,
-     have h1: 0 = (⟨0, 0⟩ : ℚ_ζ), by exact eql 0,
+     have h1: 0 = (⟨0, 0⟩ : ℚ_ζ), by exact eql0 0,
      calc (x + 0).d = ((x + ⟨0, 0⟩ : ℚ_ζ)).d         : by rw h1
-             ...    = ((⟨x.c, x.d⟩ + ⟨0, 0⟩ : ℚ_ζ)).d : by rw (eql x)   
+             ...    = ((⟨x.c, x.d⟩ + ⟨0, 0⟩ : ℚ_ζ)).d : by rw (eql0 x)   
              ...    = (⟨x.c + 0, x.d + 0⟩ : ℚ_ζ).d   : rfl 
              ...    = (⟨x.c, x.d⟩ : ℚ_ζ).d           : by norm_num  
              ...    = x.d                            : rfl,
@@ -1161,7 +1303,7 @@ begin
      intros a b c,
      simp[ext],
      split,
-     calc (a + b + c).c = (⟨a.c, a.d⟩ + ⟨b.c, b.d⟩ + ⟨c.c, c.d⟩ : ℚ_ζ).c   : by rw [eql a, eql b, eql c]
+     calc (a + b + c).c = (⟨a.c, a.d⟩ + ⟨b.c, b.d⟩ + ⟨c.c, c.d⟩ : ℚ_ζ).c   : by rw [eql0 a, eql0 b, eql0 c]
                    ...  = (⟨a.c + b.c, a.d + b.d⟩ + ⟨c.c, c.d⟩ : ℚ_ζ).c   : rfl 
                    ...  =  (⟨a.c + b.c + c.c, a.d + b.d + c.d⟩ : ℚ_ζ).c   : rfl 
                    ...  =  (a.c + b.c + c.c : ℚ)                         : rfl 
@@ -1169,8 +1311,8 @@ begin
                    ...  =  (⟨a.c + (b.c + c.c), a.d + (b.d + c.d)⟩ : ℚ_ζ).c   :  rfl 
                    ...  =  (⟨a.c, a.d⟩ + ⟨b.c + c.c, b.d + c.d⟩ : ℚ_ζ).c   : rfl
                    ...  =  (⟨a.c, a.d⟩ + (⟨b.c, b.d⟩ + ⟨c.c, c.d⟩) : ℚ_ζ).c : rfl
-                   ...  =  (a + (b + c)).c                                : by {try{refl}, rw[←eql a, ←eql b, ← eql c]},
-     calc (a + b + c).d = (⟨a.c, a.d⟩ + ⟨b.c, b.d⟩ + ⟨c.c, c.d⟩ : ℚ_ζ).d   : by rw [eql a, eql b, eql c]
+                   ...  =  (a + (b + c)).c                                : by {try{refl}, rw[←eql0 a, ←eql0 b, ← eql0 c]},
+     calc (a + b + c).d = (⟨a.c, a.d⟩ + ⟨b.c, b.d⟩ + ⟨c.c, c.d⟩ : ℚ_ζ).d   : by rw [eql0 a, eql0 b, eql0 c]
                    ...  = (⟨a.c + b.c, a.d + b.d⟩ + ⟨c.c, c.d⟩ : ℚ_ζ).d   : rfl 
                    ...  =  (⟨a.c + b.c + c.c, a.d + b.d + c.d⟩ : ℚ_ζ).d   : rfl 
                    ...  =  (a.d + b.d + c.d : ℚ)                         : rfl 
@@ -1178,17 +1320,17 @@ begin
                    ...  =  (⟨a.c + (b.c + c.c), a.d + (b.d + c.d)⟩ : ℚ_ζ).d   :  rfl 
                    ...  =  (⟨a.c, a.d⟩ + ⟨b.c + c.c, b.d + c.d⟩ : ℚ_ζ).d   : rfl
                    ...  =  (⟨a.c, a.d⟩ + (⟨b.c, b.d⟩ + ⟨c.c, c.d⟩) : ℚ_ζ).d : rfl
-                   ...  =  (a + (b + c)).d                                : by {try{refl}, rw[←eql a, ←eql b, ← eql c]},
+                   ...  =  (a + (b + c)).d                                : by {try{refl}, rw[←eql0 a, ←eql0 b, ← eql0 c]},
 end
 @[simp]lemma add_comm : ∀ x y: ℚ_ζ, x + y = y + x :=
 begin
      intros x y,
      have h1: x.c + y.c = y.c + x.c ∧ x.d + y.d = y.d + x.d, by {split, ring, ring,},
-     calc x + y = ⟨x.c, x.d⟩ + ⟨y.c, y.d⟩    :   by rw [eql x, eql y]
+     calc x + y = ⟨x.c, x.d⟩ + ⟨y.c, y.d⟩    :   by rw [eql0 x, eql0 y]
             ... = ⟨x.c + y.c, x.d + y.d⟩    :   rfl 
             ... = ⟨y.c + x.c, y.d + x.d⟩    :   by rw[h1.1, h1.2]
             ... = ⟨y.c, y.d⟩ + ⟨x.c, x.d⟩    :   rfl 
-            ... = y + x                    :   by rw[←eql x, ←eql y],
+            ... = y + x                    :   by rw[←eql0 x, ←eql0 y],
 end
 @[simp]lemma add_assoc_0 : ∀ x y z : ℚ_ζ, x + (y + z) = z + (x + y)       :=
 begin
@@ -1203,12 +1345,12 @@ begin
      simp[ext],
      have h : -x  = ⟨-x.c, -x.d⟩, by {simp[ext], try{refl}},
      split,
-     calc (x + (-x)).c = (⟨x.c, x.d⟩ + (-x): ℚ_ζ).c  : by rw eql x 
+     calc (x + (-x)).c = (⟨x.c, x.d⟩ + (-x): ℚ_ζ).c  : by rw eql0 x 
               ...    = (⟨x.c, x.d⟩ + ⟨-x.c, -x.d⟩ : ℚ_ζ).c  : by rw h
               ...    = (⟨x.c + -x.c, x.d + -x.d⟩ : ℚ_ζ).c   : rfl 
               ...    = (⟨0, 0⟩ : ℚ_ζ).c                     : by norm_num
               ...    = 0                                : rfl,
-     calc (x + (-x)).d = (⟨x.c, x.d⟩ + (-x): ℚ_ζ).d  : by rw eql x 
+     calc (x + (-x)).d = (⟨x.c, x.d⟩ + (-x): ℚ_ζ).d  : by rw eql0 x 
               ...    = (⟨x.c, x.d⟩ + ⟨-x.c, -x.d⟩ : ℚ_ζ).d  : by rw h
               ...    = (⟨x.c + -x.c, x.d + -x.d⟩ : ℚ_ζ).d   : rfl 
               ...    = (⟨0, 0⟩ : ℚ_ζ).d                     : by norm_num
@@ -1220,12 +1362,12 @@ begin
      simp[ext],
      have h : -x  = ⟨-x.c, -x.d⟩, by {simp[ext], try{refl}},
      split,
-     calc (x + (-x)).c = (⟨x.c, x.d⟩ + (-x): ℚ_ζ).c  : by rw eql x 
+     calc (x + (-x)).c = (⟨x.c, x.d⟩ + (-x): ℚ_ζ).c  : by rw eql0 x 
               ...    = (⟨x.c, x.d⟩ + ⟨-x.c, -x.d⟩ : ℚ_ζ).c  : by rw h
               ...    = (⟨x.c + -x.c, x.d + -x.d⟩ : ℚ_ζ).c   : rfl 
               ...    = (⟨0, 0⟩ : ℚ_ζ).c                     : by norm_num
               ...    = 0                                : rfl,
-     calc (x + (-x)).d = (⟨x.c, x.d⟩ + (-x): ℚ_ζ).d  : by rw eql x 
+     calc (x + (-x)).d = (⟨x.c, x.d⟩ + (-x): ℚ_ζ).d  : by rw eql0 x 
               ...    = (⟨x.c, x.d⟩ + ⟨-x.c, -x.d⟩ : ℚ_ζ).d  : by rw h
               ...    = (⟨x.c + -x.c, x.d + -x.d⟩ : ℚ_ζ).d   : rfl 
               ...    = (⟨0, 0⟩ : ℚ_ζ).d                     : by norm_num
@@ -1234,14 +1376,14 @@ end
 @[simp] theorem mul_assoc (a b c: ℚ_ζ) : a * b * c = a * (b * c):= 
 begin 
      have h1 : (a * b * c).c = (a * (b * c)).c, 
-     calc (a * b * c).c = (⟨a.c, a.d⟩ * ⟨b.c, b.d⟩ * ⟨c.c, c.d⟩ : ℚ_ζ).c    : by rw [eql a, eql b, eql c] 
+     calc (a * b * c).c = (⟨a.c, a.d⟩ * ⟨b.c, b.d⟩ * ⟨c.c, c.d⟩ : ℚ_ζ).c    : by rw [eql0 a, eql0 b, eql0 c] 
                 ...     = (a.c * b.c - a.d * b.d) * c.c - (a.c * b.d + a.d * b.c - a.d * b.d) * c.d  
                                                                            : by simp [ext] 
                 ...     = a.c * (b.c * c.c - b.d * c.d) - a.d *(b.c * c.d + b.d * c.c - b.d * c.d)
                                                                            : by ring                                                                                                                 
                 ...     = (a * (b * c)).c                                  : by simp [ext],
      have h2 : (a * b * c).d = (a * (b * c)).d, 
-     calc (a * b * c).d = (⟨a.c, a.d⟩ * ⟨b.c, b.d⟩ * ⟨c.c, c.d⟩ : ℚ_ζ ).d    : by rw [eql a, eql b, eql c] 
+     calc (a * b * c).d = (⟨a.c, a.d⟩ * ⟨b.c, b.d⟩ * ⟨c.c, c.d⟩ : ℚ_ζ ).d    : by rw [eql0 a, eql0 b, eql0 c] 
                 ...     = (a.c * b.c - a.d * b.d) * c.d + (a.c * b.d + a.d * b.c - a.d * b.d) * c.c 
                           - (a.c * b.d + a.d * b.c - a.d * b.d) * c.d      : by simp[ext] 
                 ...     = a.c * (b.c * c.d + b.d * c.c - b.d * c.d) + a.d * (b.c * c.c - b.d * c.d) 
@@ -1249,10 +1391,42 @@ begin
                 ...     = (a * (b * c)).d                                  : by simp [ext],
      exact ext.mpr ⟨h1, h2⟩,
 end
-@[simp] theorem left_distrib (a b c : ℚ_ζ) : a * (b + c) = a * c + b * c := 
+@[simp] theorem left_distrib (a b c : ℚ_ζ) : a * (b + c) = a * b + a * c := 
 begin
-     毕业si
+     simp[ext],
+     split,
+     calc a.c * (b + c).c - a.d * (b + c).d = a.c * (⟨b.c, b.d⟩ + ⟨c.c, c.d⟩ : ℚ_ζ).c 
+                                             - a.d * (⟨b.c, b.d⟩ + ⟨c.c, c.d⟩ : ℚ_ζ).d : by rw [eql0 b, eql0 c]
+                                   ...      = a.c * (b.c + c.c) - a.d * (b.d + c.d) : by refl
+                                   ...      = a.c * b.c - a.d * b.d + (a.c * c.c - a.d * c.d) : by ring
+                                   ...      = (⟨a.c * b.c - a.d * b.d, a.c * b.d + a.d * b.c - a.d * b.d⟩ 
+                                            +  ⟨a.c * c.c - a.d * c.d, a.c * c.d + a.d * c.c - a.d * c.d⟩ : ℚ_ζ).c : by simp*
+                                   ...      = (⟨a.c, a.d⟩ * ⟨b.c, b.d⟩ + ⟨a.c, a.d⟩ * ⟨c.c, c.d⟩: ℚ_ζ).c : by refl
+                                   ...      = (a * b + a * c).c         : by rw [← eql0 a, ←eql0 b, ←eql0 c],
+     calc a.c * (b + c).d + a.d * (b + c).c - a.d * (b + c).d = 
+          a.c * (⟨b.c, b.d⟩ + ⟨c.c, c.d⟩ : ℚ_ζ).d + a.d * (⟨b.c, b.d⟩ + ⟨c.c, c.d⟩ : ℚ_ζ).c 
+          - a.d * (⟨b.c, b.d⟩ + ⟨c.c, c.d⟩ : ℚ_ζ).d : by rw [eql0 b, eql0 c]
+          ...  = a.c * (b.d + c.d) + a.d * (b.c + c.c) - a.d * (b.d + c.d) : by refl 
+          ...  = (a.c * b.d + a.d * b.c - a.d * b.d) + (a.c * c.d + a.d * c.c - a.d * c.d) : by ring
+          ...  = (⟨a.c * b.c - a.d * b.d, a.c * b.d + a.d * b.c - a.d * b.d⟩ 
+               +  ⟨a.c * c.c - a.d * c.d, a.c * c.d + a.d * c.c - a.d * c.d⟩ : ℚ_ζ).d : by simp*
+          ...  = (⟨a.c, a.d⟩ * ⟨b.c, b.d⟩ + ⟨a.c, a.d⟩ * ⟨c.c, c.d⟩: ℚ_ζ).d : by refl
+          ...      = (a * b + a * c).d         : by rw [← eql0 a, ←eql0 b, ←eql0 c],
 end
+@[simp] theorem mul_comm (a b : ℚ_ζ) : a * b = b * a := 
+begin
+     calc a * b = ⟨a.c, a.d⟩ * ⟨b.c, b.d⟩    : by rw [eql0 a, eql0 b] 
+         ...    = ⟨a.c * b.c - a.d * b.d, a.c * b.d + a.d * b.c - a.d * b.d⟩  : by refl 
+         ...    = ⟨b.c * a.c - b.d * a.d, b.c * a.d + b.d * a.c - b.d * a.d⟩  : by {simp,split, ring,ring}
+         ...    = ⟨b.c, b.d⟩ * ⟨a.c, a.d⟩    : by refl
+         ...    = b * a                    : by rw [← eql0 a, ← eql0 b],
+end
+@[simp] theorem right_distrib (a b c : ℚ_ζ) : (a + b) * c = a * c + b * c :=
+begin
+     simp[ext],
+end
+
+
 instance : comm_ring ℚ_ζ :=
 by refine_struct
 { add            := (+),
@@ -1269,61 +1443,167 @@ by refine_struct
   add_left_neg   := add_left_neg,
   add_comm       := add_comm,
   add_assoc      := add_assoc,
-  mul_assoc      := mul_assoc,};
+  mul_assoc      := mul_assoc,
+  left_distrib   := left_distrib,
+  right_distrib  := right_distrib,
+  mul_comm       := mul_comm,};
 {intros; try { refl }; 
 simp [ext, add_mul, mul_add, add_comm, add_left_comm,
   left_distrib, mul_comm, mul_left_comm, mul_assoc, right_distrib],}
 
-/-norm-/
-def norm (a : ℚ_ζ) : ℚ := a.c * a.c - a.c * a.d + a.d * a.d 
 
-lemma norm_le_1: ∀ x : ℚ_ζ, abs x.c ≤ 1/2 ∧ abs x.d ≤ 1/2 → x.norm < 1 :=
+
+/-unique 'ring-hom' from ℤ_ζ to ℂ-/
+open int_cubic_root 
+
+@[simp] def lift0: ℤ_ζ →+* ℚ_ζ :=
+{ 
+  to_fun := λ x, ⟨(x.a : ℚ), (x.b : ℚ)⟩,
+  map_zero' := by try{refl},
+  map_add' := λ a b, by { simp, },
+  map_one' := by try{refl},
+  map_mul' := λ x y, by { simp[ext],},
+}
+instance : has_coe (ℤ_ζ) ℚ_ζ := ⟨lift0⟩
+
+theorem coe_add : ∀ x y : ℤ_ζ, (x : ℚ_ζ) + (y : ℚ_ζ) = (coe(x + y) : ℚ_ζ) := 
 begin
-     intros x h,
-     have h1: x.c^2 + (-x.c * x.d + x.d^2) = x.c^2 - x.c * x.d + x.d^2, by ring,
-     have h2: abs (x.c^2) ≤ 1/4, by sorry,
-     have h3: abs (-x.c * x.d) ≤ 1/4, by sorry,
-     have h4: abs (x.d^2) ≤ 1/4, by sorry,
-     calc x.norm = x.c * x.c - x.c * x.d + x.d * x.d       : rfl
-             ... ≤ abs (x.c * x.c - x.c * x.d + x.d * x.d) : by exact le_abs_self (x.a * x.a - x.a * x.b + x.b * x.b)
-             ... = abs (x.c^2 - x.c * x.d + x.d^2)         : by ring_nf 
-             ... = abs (x.c^2 + (-x.c * x.d + x.d^2))      : by rw h1
-             ... ≤ abs (x.c^2) + abs (-x.c * x.d + x.d^2)  : by exact abs_add (x.a^2) (-x.a * x.b + x.b^2)
-             ... ≤ abs (x.c^2) + abs (-x.c * x.d) + abs (x.d^2) 
-                 : by linarith[abs_add (- x.c * x.d) (x.d^2)]
-             ... ≤ 1/4 + 1/4 + 1/4                         : by linarith[h2, h3, h4]
-             ... < 1                                       : by norm_num,
+     intros x y,
+     calc (x : ℚ_ζ) + (y : ℚ_ζ) = ⟨(x.a : ℚ), (x.b : ℚ)⟩ + ⟨(y.a : ℚ), (y.b : ℚ)⟩  : by try{refl}
+                         ...     = ⟨(x.a + y.a : ℚ), (x.b + y.b : ℚ)⟩               : rfl 
+                         ...     = ⟨(coe (x.a + y.a) : ℚ), (coe (x.b + y.b) : ℚ)⟩   : by simp* 
+                         ...     = (coe(⟨x.a, x.b⟩ + ⟨y.a, y.b⟩ : ℤ_ζ) : ℚ_ζ)        : by try {refl}
+                         ...     = (coe(x + y) : ℚ_ζ)                              : by rw [eql x, eql y],
 end
+theorem coe_sub : ∀ x y : ℤ_ζ, (x : ℚ_ζ) - (y : ℚ_ζ) = (coe(x - y) : ℚ_ζ)   :=
+begin
+     intros x y,
+     calc (x : ℚ_ζ) - (y : ℚ_ζ) = ⟨(x.a : ℚ), (x.b : ℚ)⟩ - ⟨(y.a : ℚ), (y.b : ℚ)⟩  : by try{refl}
+                         ...     = ⟨(x.a - y.a : ℚ), (x.b - y.b : ℚ)⟩               : rfl 
+                         ...     = ⟨(coe (x.a - y.a) : ℚ), (coe (x.b - y.b) : ℚ)⟩   : by simp* 
+                         ...     = (coe(⟨x.a, x.b⟩ - ⟨y.a, y.b⟩ : ℤ_ζ) : ℚ_ζ)        : by try {refl}
+                         ...     = (coe(x - y) : ℚ_ζ)                              : by rw [eql x, eql y],
+end
+theorem coe_mul : ∀ x y : ℤ_ζ, (x : ℚ_ζ) * (y : ℚ_ζ) = (coe(x * y) : ℚ_ζ) := 
+begin
+     intros x y,
+     calc (x : ℚ_ζ) * (y : ℚ_ζ) = ⟨(x.a : ℚ), (x.b : ℚ)⟩ * ⟨(y.a : ℚ), (y.b : ℚ)⟩  : by try{refl} 
+                       ...       = ⟨(x.a * y.a - x.b * y.b : ℚ), (x.a * y.b + x.b * y.a - x.b * y.b : ℚ)⟩ : rfl 
+                       ...       = ⟨(coe (x.a * y.a - x.b * y.b) : ℚ), (coe (x.a * y.b + x.b * y.a - x.b * y.b) : ℚ)⟩ : by simp* 
+                       ...       = (coe (⟨x.a, x.b⟩ * ⟨y.a, y.b⟩ : ℤ_ζ) : ℚ_ζ)       : by try {refl} 
+                       ...       = (coe (x * y) : ℚ_ζ)                              : by rw [eql x, eql y],
+end
+theorem coe_neg : ∀ x : ℤ_ζ, (-x : ℚ_ζ) = -(x : ℚ_ζ) := by simp*
 
+@[simp] theorem int_rat_cubic_coe(x y: ℤ_ζ) : 
+(x : ℚ_ζ).norm1 < (y : ℚ_ζ).norm1 → x.norm < y.norm :=
+begin 
+     intro h,
+     have h1 : (x.norm : ℚ) = (x : ℚ_ζ).norm1,
+     calc (x.norm : ℚ) = (coe (x.a * x.a - x.a * x.b + x.b * x.b) : ℚ)  : rfl
+             ... = (x.a * x.a - x.a * x.b + x.b * x.b : ℚ)      : by norm_num 
+             ... = (⟨x.a, x.b⟩ : ℚ_ζ).norm1                      : by refl
+             ... = (⟨(x.a : ℚ), (x.b : ℚ)⟩ : ℚ_ζ).norm1         : by try {refl}
+             ... = (x : ℚ_ζ).norm1                              : by try {refl},
+     have h2 : (y.norm : ℚ) = (y : ℚ_ζ).norm1, 
+     calc (y.norm : ℚ) = (coe (y.a * y.a - y.a * y.b + y.b * y.b) : ℚ)  : rfl
+             ... = (y.a * y.a - y.a * y.b + y.b * y.b : ℚ)      : by norm_num 
+             ... = (⟨y.a, y.b⟩ : ℚ_ζ).norm1                      : by refl
+             ... = (⟨(y.a : ℚ), (y.b : ℚ)⟩ : ℚ_ζ).norm1         : by try {refl}
+             ... = (y : ℚ_ζ).norm1                              : by try {refl},
+     have h3 : (x.norm : ℚ) < (y.norm : ℚ), 
+     calc (x.norm : ℚ)  = (x : ℚ_ζ).norm1 :  by rw h1 
+           ...   < (y : ℚ_ζ).norm1         :  by exact h 
+           ...   = (y.norm : ℚ)            :  by rw h2,
+     have h4 : ∀ a b : ℤ, (a : ℚ) < (b : ℚ) → a < b, by norm_num,
+     exact h4 x.norm y.norm h3,
+end
 end
 end ra_cubic_root
 
-/-unique 'ring-hom' from ℤ_ζ to ℂ-/
-open int_cubic_root
-def ω : ℂ := ⟨-1/2, 12⟩ 
-@[simp] def lift: ℤ_ζ →+* ℂ :=
-{ 
-  to_fun := λ x, x.a + x.b * ω,
-  map_zero' := by simp,
-  map_add' := λ a b, by { simp, ring, },
-  map_one' := by simp,
-  map_mul' := λ x y, by {
-      have : (x.a + x.b * ω: ℂ) * (y.a + y.b * ω) =
-              x.a * y.a + (x.a * y.b + x.b * y.a) * ω + x.b * y.b * (ω * ω) := by ring,
-      ring_nf, sorry},
-}
-instance : has_coe (ℤ_ζ) ℂ := ⟨lift⟩
-
+theorem int_ne_zero(x : ℤ_ζ) : x ≠ 0 → x.a ≠ 0 ∨ x.b ≠ 0 := 
+begin
+     intro h,
+     contrapose! h,
+     simp[int_cubic_root.ext],
+     exact h,
+end
+theorem ra_c_ne (x : ℚ_ζ) : x.c ≠ 0 → x ≠ 0 := 
+begin
+     intro h, contrapose! h, simp*,
+end
+theorem ra_d_ne (x : ℚ_ζ) : x.d ≠ 0 → x ≠ 0 := 
+begin
+     intro h, contrapose! h, simp*,
+end
 
 /-get back to ℤ_ζ-/
-@[simp] theorem remainder_lt:  ∀ (a : ℤ_ζ) {b : ℤ_ζ}, b ≠ 0 → r (a - b * a.quotient b) b
-:= 
+open int_cubic_root
+open ra_cubic_root
+section
+theorem remainder_lt:  ∀ (a : ℤ_ζ) {b : ℤ_ζ}, b ≠ 0 → r (a - b * a.quotient b) b := 
 begin
 intros a b h,
-have h0: (a - b * a.quotient b).norm < b.norm, 
+let r0 := a - b * a.quotient b,
+have t : (r0 : ℚ_ζ).norm1 < (b : ℚ_ζ).norm1, 
 begin
-     sorry,
+     have hb: (b : ℚ_ζ) ≠ 0, 
+     begin
+          have b1 : b.a ≠ 0 ∨ b.b ≠ 0, by exact int_ne_zero b h,
+          cases b1, 
+          {have ba : (b.a : ℚ) ≠ 0, by simp*,
+           calc (b : ℚ_ζ) = ⟨(b.a : ℚ), (b.b : ℚ)⟩  :  by try {refl}
+                     ...  ≠ 0                        :  by exact ra_c_ne ⟨(b.a : ℚ), (b.b : ℚ)⟩ ba, },
+          {have bb : (b.b : ℚ) ≠ 0, by simp*,
+           calc (b : ℚ_ζ) = ⟨(b.a : ℚ), (b.b : ℚ)⟩  :  by try {refl}
+                     ...  ≠ 0                        :  by exact ra_d_ne ⟨(b.a : ℚ), (b.b : ℚ)⟩ bb, },
+     end,
+     have s0 : (r0 : ℚ_ζ) = (a : ℚ_ζ) - (b : ℚ_ζ) * (coe(a.quotient b)), 
+     calc (r0 : ℚ_ζ) = (coe (a - b * a.quotient b) : ℚ_ζ)                   : by try {refl} 
+                ...   = (a : ℚ_ζ) - (coe(b * a.quotient b) : ℚ_ζ)           : by rw ←coe_sub a (b * a.quotient b)
+                ...   = (a : ℚ_ζ) - (b : ℚ_ζ) * (coe(a.quotient b))         : by rw ←coe_mul b (a.quotient b),
+     have s1 : (a : ℚ_ζ) = (b : ℚ_ζ) * ((a : ℚ_ζ)/(b : ℚ_ζ)), by rw div_mul (a : ℚ_ζ) (b : ℚ_ζ) hb,
+     let r1 := (a : ℚ_ζ)/(b : ℚ_ζ) - (a.quotient b : ℚ_ζ),
+     have s2 : (r0 : ℚ_ζ).norm1 = (b : ℚ_ζ).norm1 * r1.norm1,
+     calc (r0 : ℚ_ζ).norm1 = ((a : ℚ_ζ) - (b : ℚ_ζ) * (coe(a.quotient b))).norm1  :  by rw s0 
+                      ...   = ((b : ℚ_ζ) * ((a : ℚ_ζ)/(b : ℚ_ζ)) - (b : ℚ_ζ) * (coe(a.quotient b))).norm1    : by rw ←s1 
+                      ...   = ((b : ℚ_ζ) * ((a : ℚ_ζ)/(b : ℚ_ζ)) + (b : ℚ_ζ) * -(coe(a.quotient b))).norm1   : by ring_nf
+                      ...   = ((b : ℚ_ζ) * ((a : ℚ_ζ)/(b : ℚ_ζ) + -coe(a.quotient b))).norm1                 : by simp*
+                      ...   = ((b : ℚ_ζ) * ((a : ℚ_ζ)/(b : ℚ_ζ) - coe(a.quotient b))).norm1                  : by ring_nf 
+                      ...   = (coe b * r1).norm1                                                               : rfl
+                      ...   = (b : ℚ_ζ).norm1 * r1.norm1                                   : by exact norm1_mul (coe b) r1,
+     have s3: (b : ℚ_ζ).norm1 > 0, by exact norm1_nezero (b : ℚ_ζ) hb,
+     let first := (a.a * b.a - a.a * b.b + a.b * b.b : ℚ)/(b.a^2 - b.a * b.b + b.b^2 : ℚ),
+     have hf : abs (first - round first : ℚ) ≤  1/2, by exact abs_sub_round first,
+     let second := (-a.a * b.b + b.a * a.b : ℚ)/(b.a^2 - b.a * b.b + b.b^2 : ℚ),
+     have hs : abs (second - round second : ℚ) ≤  1/2, by exact abs_sub_round second,
+     have s4: r1.norm1 < 1, 
+     begin
+          calc r1.norm1 = ((a : ℚ_ζ)/(b : ℚ_ζ) - (a.quotient b : ℚ_ζ)).norm1 : rfl 
+                    ... = ((⟨(a.a : ℚ), (a.b : ℚ)⟩ : ℚ_ζ) / ⟨(b.a : ℚ), (b.b : ℚ)⟩ - (a.quotient b : ℚ_ζ)).norm1 : by try{refl}
+                    ... = ((⟨(a.a * b.a - a.a * b.b + a.b * b.b : ℚ)/(b.a^2 - b.a * b.b + b.b^2 : ℚ), 
+                    (-a.a * b.b + b.a * a.b : ℚ)/(b.a^2 - b.a * b.b + b.b^2 : ℚ)⟩ : ℚ_ζ) 
+                    - (a.quotient b : ℚ_ζ)).norm1 : by try {refl}
+                    ... =  ((⟨(a.a * b.a - a.a * b.b + a.b * b.b : ℚ)/(b.a^2 - b.a * b.b + b.b^2 : ℚ), 
+                    (-a.a * b.b + b.a * a.b : ℚ)/(b.a^2 - b.a * b.b + b.b^2 : ℚ)⟩ : ℚ_ζ) 
+                    - ((⟨a.a, a.b⟩ : ℤ_ζ) .quotient (⟨b.a, b.b⟩ : ℤ_ζ) : ℚ_ζ)).norm1 : by rw [eql a, eql b]
+                    ... = ((⟨(a.a * b.a - a.a * b.b + a.b * b.b : ℚ)/(b.a^2 - b.a * b.b + b.b^2 : ℚ), 
+                    (-a.a * b.b + b.a * a.b : ℚ)/(b.a^2 - b.a * b.b + b.b^2 : ℚ)⟩ : ℚ_ζ) 
+                    - (coe(⟨round ((a.a * b.a - a.a * b.b + a.b * b.b : ℚ)/(b.a^2 - b.a * b.b + b.b^2 : ℚ)), 
+          round ((-a.a * b.b + b.a * a.b : ℚ)/(b.a^2 - b.a * b.b + b.b^2 : ℚ))⟩ : ℤ_ζ) : ℚ_ζ)).norm1 : by rw quotient_def
+          ...  = ((⟨first, second⟩: ℚ_ζ) - (⟨(round first : ℚ), (round second : ℚ)⟩ : ℚ_ζ)).norm1      : by refl 
+          ...  = (⟨(first - round first : ℚ), (second - round second : ℚ)⟩ : ℚ_ζ).norm1           : rfl 
+          ...  < 1         : by exact norm_lt_1 (⟨(first - round first : ℚ), (second - round second : ℚ)⟩ : ℚ_ζ) 
+                                ⟨hf, hs⟩,
+     end,
+     calc (r0 : ℚ_ζ).norm1 = (b : ℚ_ζ).norm1 * r1.norm1  : by rw s2 
+           ...           = r1.norm1 * (b : ℚ_ζ).norm1  : by ring_nf 
+           ...           < 1 * (b : ℚ_ζ).norm1         : by exact mul_lt_mul s4 (le_refl (b : ℚ_ζ).norm1) s3 zero_le_one
+           ...           = (b : ℚ_ζ).norm1 * 1         : by ring 
+           ...           = (b : ℚ_ζ).norm1             : by norm_num,
 end,
+have h0: (a - b * a.quotient b).norm < b.norm, 
+by exact int_rat_cubic_coe (a - b * a.quotient b) b t,
 have h1: (a - b * a.quotient b).norm.nat_abs < b.norm.nat_abs, 
 begin
      apply nat_abs_lt ((a - b * a.quotient b).norm) (b.norm), 
@@ -1340,7 +1620,7 @@ end
 :=
 begin
      intros a b h,
-     have t: b.a ≠ 0 ∨ b.b ≠ 0, {contrapose! h, simp[ext], exact h,},
+     have t: b.a ≠ 0 ∨ b.b ≠ 0, {contrapose! h, simp[int_cubic_root.ext], exact h,},
      have h1 : b.norm ≥  1, 
      {cases t,
      {have t1 : (2 * b.b - b.a)^2 ≥ 0, by exact pow_two_nonneg (2 * b.b - b.a),
@@ -1393,6 +1673,7 @@ begin
 end
 
 /-euclidean domain-/
+
 instance int_cubic_root.euclidean_domain : euclidean_domain ℤ_ζ :=
 by refine_struct
 { add := (+),
@@ -1400,40 +1681,38 @@ by refine_struct
   one := (1 : ℤ_ζ),
   zero := (0 : ℤ_ζ),
   neg := has_neg.neg,
-  zero_add := zero_add,
+  zero_add := int_cubic_root.zero_add,
   add_zero := add_zero,
   nsmul := nsmul,
   sub := λ a b, a + -b,
   gsmul          := @gsmul_rec _ ⟨0⟩ ⟨(+)⟩ ⟨int_cubic_root.neg⟩,
-  add_left_neg := add_left_neg,
+  add_left_neg   := int_cubic_root.add_left_neg,
   npow           := @npow_rec _ ⟨1⟩ ⟨(*)⟩,
   exists_pair_ne := exists_pair_ne,
   quotient       := quotient,
   quotient_zero  := div_zero,
   remainder      := λ a b, a - b * (quotient a b),
   quotient_mul_add_remainder_eq := quotient_mul_add_remainder_eq,
-  add_assoc      := add_assoc,
+  add_assoc      := int_cubic_root.add_assoc,
   nsmul_zero'    := nsmul_zero',
   nsmul_succ'    := nsmul_succ',
-  sub_eq_add_neg := sub_eq_add_neg,
+  sub_eq_add_neg := int_cubic_root.sub_eq_add_neg,
   gsmul_zero'    := gsmul_zero',
-  add_comm       := add_comm,
-  mul_assoc      := mul_assoc,
-  one_mul        := one_mul,
-  mul_one        := mul_one,
+  add_comm       := int_cubic_root.add_comm,
+  mul_assoc      := int_cubic_root.mul_assoc,
+  one_mul        := int_cubic_root.one_mul,
+  mul_one        := int_cubic_root.mul_one,
   npow_zero'     := npow_zero',
   npow_succ'     := npow_succ',
   left_distrib   := left_distrib_0,
   right_distrib  := right_distrib_0,
   gsmul_succ'    := gsmul_succ',
   gsmul_neg'     := gsmul_neg',
-  mul_comm       := mul_comm,
+  mul_comm       := int_cubic_root.mul_comm,
   r              := r,
   r_well_founded := r_well_founded,
   remainder_lt   := remainder_lt,
   mul_left_not_lt  := mul_left_not_lt,
   }
 
-end 
-end int_cubic_root
-
+end
