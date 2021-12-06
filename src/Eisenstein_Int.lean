@@ -1716,3 +1716,4 @@ by refine_struct
   }
 
 end
+#lint
