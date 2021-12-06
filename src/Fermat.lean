@@ -142,3 +142,5 @@ begin
            ...   = z^(p*k)            : by rw mul_comm p k
            ...   = z^n                : by rw hkp,
 end
+
+#lint
