@@ -1,33 +1,14 @@
 import data.nat.basic
-import data.int.nat_prime
 import tactic
 import data.nat.prime
 import number_theory.fermat4
 
 
-lemma pow_nonzero {x y z: ℤ} {k: ℕ} : x * y * z ≠ 0 →  (x^k) * (y^k) * (z^k) ≠ 0
+lemma pow_nonzero {x y z: ℤ} {k: ℕ} : 
+x * y * z ≠ 0 → (x^k) * (y^k) * (z^k) ≠ 0
 := 
 begin
   intro h,
-  have h1: x ≠ 0, 
-  {intro h1,
-  contrapose! h,
-  calc x * y * z = 0 * y * z    : by rw h1
-          ...    = 0 * (y * z)  : by exact mul_assoc 0 y z
-          ...    = 0            : by exact zero_mul (y*z),},
-  have h2: y ≠ 0, 
-  {intro h2,
-  contrapose! h,
-  calc x * y * z = x * 0 * z    : by rw h2
-          ...    = x * (0 * z)  : by ring
-          ...    = x * 0        : by rw zero_mul z
-          ...    = 0            : by exact mul_zero x,},
-  have h3: z ≠ 0, 
-  {intro h3,
-  contrapose! h,
-  calc x * y * z = x * y * 0    : by rw h3
-          ...    = (x * y) * 0  : by ring
-          ...    = 0            : by exact mul_zero (x * y)},
   have h4: (x * y * z)^k ≠ 0, 
   {exact pow_ne_zero k h,},
   calc (x^k) * (y^k) * (z^k) = (x * y)^k * z^k  : by rw mul_pow x y k 
@@ -35,14 +16,14 @@ begin
                         ...  ≠ 0                : by exact h4,
 end
 
-theorem pow_assoc(x: ℤ)(m n:ℕ) : x^(m*n) = (x^m)^n 
+lemma pow_assoc(x: ℤ)(m n:ℕ) : x^(m*n) = (x^m)^n 
 := 
 begin
   exact pow_mul x m n,
 end
 
 theorem fermat_last_theorem_p :
- ∀ x y z:ℤ, ∀ n : ℕ, n > 2 ∧ nat.prime n ∧ x * y * z ≠ 0 → x^n + y^n ≠ z^n
+ ∀ x y z:ℤ, ∀ n : ℕ, 2 < n ∧ nat.prime n ∧ x * y * z ≠ 0 → x^n + y^n ≠ z^n
 := sorry
 
 theorem fermat_last_theorem_4 :
@@ -68,15 +49,14 @@ end
 
 
 theorem fermat_last_theorem :
-  ∀ x y z: ℤ, ∀ n: ℕ ,n > 2 ∧ x * y * z ≠ 0 → x^n + y^n ≠ z^n
+  ∀ x y z: ℤ, ∀ n: ℕ , 2 < n ∧ x * y * z ≠ 0 → x^n + y^n ≠ z^n
 :=
 begin
   intros x y z n h,
   have h1: (4 ∣ n) ∨ ¬ (4 ∣ n), by exact em (4 ∣ n),
   rcases h1 with ⟨ k, rfl ⟩,
   have h2: (x^k) * (y^k) * (z^k) ≠ 0, by exact pow_nonzero h.2,
-  calc x^(4 * k) + y^(4 * k) = x^(k * 4) + y^(4 * k) : by rw mul_comm 4 k 
-       ... = x^(k * 4) + y^(k * 4)                   : by rw mul_comm 4 k
+  calc x^(4 * k) + y^(4 * k) = x^(k * 4) + y^(k * 4) : by rw mul_comm 4 k
        ... =(x^k)^4 + y^(k*4)                        : by rw pow_assoc x k 4
        ... = (x^k)^4 + (y^k)^4                       : by rw pow_assoc y k 4
        ... ≠ (z^k)^4                                 : by exact fermat_last_theorem_4 (x^k) (y^k) (z^k) h2
@@ -106,8 +86,7 @@ begin
      have t4: p > 2 ∧ nat.prime p ∧ x^(2 * l)*(y^(2 * l))*(z^(2 * l))≠ 0, by exact ⟨t5, t3, t1⟩, 
      exact fermat_last_theorem_p (x^(2 * l)) (y^(2 * l)) (z^(2 * l)) p t4,
     },
-    calc x^(2 * k) + y^(2 * k) = x^(2 * (p * l)) + y^(2 * k)        : by rw hl
-                         ...   = x^(2 * (p * l)) + y^(2 * (p * l))  : by rw hl 
+    calc x^(2 * k) + y^(2 * k) = x^(2 * (p * l)) + y^(2 * (p * l))  : by rw hl 
                          ...   = x^(2 * (l * p)) + y^(2 * (l * p))  : by rw mul_comm p l
                          ...   = x^(2 * l * p) + y^(2 * l * p)      : by rw mul_assoc 2 l p
                          ...   = (x^(2 * l))^p + y^(2 * l * p)      : by rw pow_assoc x (2 * l) p
@@ -133,14 +112,13 @@ begin
   have hp5: (x^k)*(y^k)*(z^k) ≠ 0, by exact pow_nonzero h.2,
   have hp6: p>2 ∧ nat.prime p ∧ (x^k)*(y^k)*(z^k) ≠ 0, by exact⟨hp3, hp2, hp5⟩,
   calc x^n + y^n = x^(p*k) + y^(p*k)  : by rw hkp 
-           ...   = x^(k*p) + y^(p*k)  : by rw mul_comm
-           ...   = x^(k*p) + y^(k*p)  : by rw mul_comm 
+           ...   = x^(k*p) + y^(k*p)  : by ring_exp 
            ...   = (x^k)^p + y^(k*p)  : by rw pow_assoc x k p 
            ...   = (x^k)^p + (y^k)^p  : by rw pow_assoc y k p 
-           ...   ≠ (z^k)^p            : by exact fermat_last_theorem_p (x^k) (y^k) (z^k) p hp6
+           ...   ≠ (z^k)^p            : by exact fermat_last_theorem_p 
+                                        (x^k) (y^k) (z^k) p hp6
            ...   = z^(k*p)            : by rw pow_assoc z k p
            ...   = z^(p*k)            : by rw mul_comm p k
            ...   = z^n                : by rw hkp,
 end
-
 #lint
