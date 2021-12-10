@@ -12,7 +12,7 @@ lemma h1_lt_3 : 1 < 3
 /-! Construction of Z[ζ] primitive root of x^3 = 1. The whole process just copies the definitions
 of those of zsqrt, by the construction, hope to show that Z[ζ] is an euclidean domain-/
 
-/-! basic structure definition of the Eisenstein Integers-/
+/-- basic structure definition of the Eisenstein Integers -/
 structure int_cubic_root :=
 (a : ℤ)
 (b : ℤ)
@@ -30,12 +30,12 @@ theorem ext : ∀ {z w : ℤ_ζ }, z = w ↔ z.a = w.a ∧ z.b = w.b
 ⟨λ h, by injection h; split; assumption,
                       λ ⟨h₁, h₂⟩, by congr; assumption⟩
 
-/-! Convert an integer to a Z_ζ n -/
+/-- Convert an integer to a Z_ζ n -/
 def of_int(m : ℤ) : ℤ_ζ := ⟨m,0⟩
 theorem of_int_a(m : ℤ) : (of_int m).a = m := rfl 
 theorem of_int_b(m : ℤ) : (of_int m).b = 0 := rfl
 
-/-! zero-/
+/-- zero-/
 def zero : ℤ_ζ  := of_int 0
 instance : has_zero ℤ_ζ := ⟨int_cubic_root.zero⟩
 theorem zero_a : (0 : ℤ_ζ ).a = 0 := rfl 
@@ -43,19 +43,19 @@ theorem zero_b : (0 : ℤ_ζ ).b = 0 := rfl
 
 instance : inhabited (ℤ_ζ) := ⟨0⟩ 
 
-/- !one-/
+/-- one-/
 def one : ℤ_ζ := of_int 1
 instance : has_one (ℤ_ζ) := ⟨int_cubic_root.one⟩ 
 @[simp] theorem one_a : (1 : (ℤ_ζ)).a = 1 := rfl
 @[simp] theorem one_b : (1 : (ℤ_ζ)).b = 0 := rfl
 lemma one_eq: (1 : (ℤ_ζ)) = ⟨1, 0⟩  := by simp[ext]
 
-/- !representative of the primitive root of order 3 in the ring ℤ[ζ]-/
+/-- representative of the primitive root of order 3 in the ring ℤ[ζ]-/
 def ζ : ℤ_ζ := ⟨0, 1⟩ 
 @[simp] theorem ζ_a : (ζ : (ℤ_ζ)).a = 0 := rfl
 @[simp] theorem ζ_b : (ζ : (ℤ_ζ)).b = 1 := rfl
 
-/-!addition-/
+/-- addition-/
 def add: (ℤ_ζ) → (ℤ_ζ) → (ℤ_ζ)
 |⟨x, y⟩ ⟨x', y'⟩ := ⟨x + x', y + y'⟩
 instance : has_add ℤ_ζ := ⟨int_cubic_root.add⟩
@@ -72,7 +72,7 @@ instance : has_add ℤ_ζ := ⟨int_cubic_root.add⟩
 @[simp] theorem bit1_re (z) : (bit1 z : ℤ_ζ).a = bit1 z.a := by simp [bit1]
 @[simp] theorem bit1_im (z) : (bit1 z : ℤ_ζ).b = bit0 z.b := by simp [bit1]
 
-/- !negation-/
+/-- negation-/
 def neg : ℤ_ζ → ℤ_ζ
 |⟨x, y⟩ := ⟨-x, -y⟩
 instance : has_neg ℤ_ζ := ⟨int_cubic_root.neg⟩
@@ -81,7 +81,7 @@ instance : has_neg ℤ_ζ := ⟨int_cubic_root.neg⟩
 @[simp] theorem neg_b : ∀ z : ℤ_ζ, (-z).b = - z.b 
 |⟨x, y⟩ := rfl 
 
-/- !muliplication-/
+/-- muliplication-/
 def mul : ℤ_ζ → ℤ_ζ → ℤ_ζ
 | ⟨x, y⟩ ⟨x', y'⟩ := ⟨x * x' - y * y', x * y' + y * x' - y * y'⟩
 instance : has_mul ℤ_ζ := ⟨int_cubic_root.mul⟩
@@ -95,7 +95,7 @@ instance : has_mul ℤ_ζ := ⟨int_cubic_root.mul⟩
 
 @[simp] theorem zero_add (a : ℤ_ζ) : 0 + a = a := by simp[ext]
 
-/-! z = ⟨z.a, z.b⟩; notations-/
+/-- z = ⟨z.a, z.b⟩; notations-/
 theorem eql(z : ℤ_ζ) : z = ⟨z.a, z.b⟩ :=
 begin 
      have h1 : z.a = (⟨z.a, z.b⟩ : ℤ_ζ).a, refl,
@@ -108,13 +108,13 @@ begin
      simp[ext], split, rw h, rw h',
 end
 
-/-! a * b * c = a * (b * c)-/
+/-- a * b * c = a * (b * c)-/
 @[simp] theorem mul_assoc (a b c: ℤ_ζ) : a * b * c = a * (b * c):= 
 begin 
      simp[ext], split, ring, ring,
 end
 
-/-! a * (b + c) = a * b + a * c-/
+/-- a * (b + c) = a * b + a * c-/
 @[simp] theorem left_distrib (a b c : ℤ_ζ) : a.a * b.a + a.a * c.a - (a.b * b.b + a.b * c.b) = a.a * b.a - a.b * b.b + (a.a * c.a - a.b * c.b) 
       ∧a.a * b.b + (a.a * c.b + (b.a * a.b + c.a * a.b)) - (a.b * b.b + a.b * c.b) =
       a.a * b.b + b.a * a.b - a.b * b.b + (a.a * c.b + c.a * a.b - a.b * c.b)
@@ -122,7 +122,7 @@ end
 begin
      split, ring, ring,
 end
-/- ! (a + b) * c = a * c + b * c-/
+/-- (a + b) * c = a * c + b * c-/
 @[simp] theorem right_distrib(a b c : ℤ_ζ) :a.a * c.a + b.a * c.a - (a.b * c.b + b.b * c.b) = a.a * c.a - a.b * c.b + (b.a * c.a - b.b * c.b) 
     ∧a.a * c.b + (b.a * c.b + (c.a * a.b + c.a * b.b)) - (a.b * c.b + b.b * c.b) =
       a.a * c.b + c.a * a.b - a.b * c.b + (b.a * c.b + c.a * b.b - b.b * c.b)
@@ -131,7 +131,7 @@ begin
      split, ring, ring,
 end
 
-/-! use the structure definition of commutative ring, fill in the properties needed to
+/-- use the structure definition of commutative ring, fill in the properties needed to
 prove that ℤ[ζ] is a commutative ring-/
 instance : comm_ring ℤ_ζ :=
 by refine_struct
@@ -164,7 +164,7 @@ instance : distrib ℤ_ζ            := by apply_instance
 instance : nontrivial ℤ_ζ :=
 ⟨⟨0, 1, dec_trivial⟩⟩
 
-/-!  ∃ lifts ℕ, ℤ → ℤ_ζ  -/
+/--  ∃ lifts ℕ, ℤ → ℤ_ζ  -/
 @[simp] theorem coe_nat_val(m : ℕ): (m : ℤ_ζ) = ⟨m, 0⟩ := 
 begin
      simp[ext], 
@@ -177,11 +177,11 @@ begin
      cases n; simp[*, int.of_nat_eq_coe, int.neg_succ_of_nat_eq],
 end
 
-/-! char(ℤ[ζ])= 0 -/
+/-- char(ℤ[ζ])= 0 -/
 instance : char_zero ℤ_ζ :=
 { cast_injective := λ m n, by simp [ext]}
 
-/-! ℕ coe : ℕ → ℤ_ζ-/
+/-- ℕ coe : ℕ → ℤ_ζ-/
 @[simp] theorem of_int_eq_coe (n : ℤ) : (of_int n : ℤ_ζ) = n :=
 by simp [ext, of_int_a, of_int_b]
 
@@ -190,12 +190,12 @@ begin
      simp[ext], split, ring, ring,
 end
 
-/-! ζ is a primitive root of order 3-/
+/-- ζ is a primitive root of order 3-/
 theorem prop_3_3: ζ^3 = ⟨1, 0⟩        :=            by ring
 
 theorem prop_3_4: 1 + ζ + ζ^2 = 0    :=            by ring
 
-/-surprised how powerful simp[ext] can be-/
+/-- surprised how powerful simp[ext] can be-/
 @[simp] theorem muld_val (x y : ℤ) : ζ * ⟨x, y⟩ = ⟨-y, x - y⟩ :=
 by simp[ext]
 
@@ -204,13 +204,11 @@ calc ζ * ζ  = ζ ^ 2 - 0                                   : by ring
      ...    = ζ ^ 2 - (1 + ζ + ζ^2)                       : by rw[←prop_3_4]
      ...    = -1 - ζ                                      : by ring
 
-@[simp] theorem smuld_val (n x y : ℤ) : ζ * (n : ℤ_ζ) * ⟨x, y⟩ = ⟨-n * y, n * x - n * y⟩ :=
-by simp [ext]
 
 theorem decompose {x y : ℤ} : (⟨x, y⟩ : ℤ_ζ) = x + ζ * y :=
 by simp [ext]
 
-/-ζ is the primitive root-/
+/-- ζ is the primitive root-/
 theorem primitive_ζ : is_primitive_root ζ 3 := 
 begin
      have h1: ζ^3 = 1,
@@ -246,8 +244,8 @@ begin
      exact ⟨0, 1, h⟩,
 end
 
-/-! conjugation of an Eisenstein Integer -/
-/-! the function conj turns an Eisenstein integer to its conjugation-/
+/-- conjugation of an Eisenstein Integer: 
+the function conj turns an Eisenstein integer to its conjugation-/
 def conj : ℤ_ζ → ℤ_ζ 
 | ⟨x, y⟩ := ⟨x-y, -y⟩
 @[simp] theorem conj_a: ∀ z : ℤ_ζ, (conj z).a = z.a - z.b
@@ -255,13 +253,13 @@ def conj : ℤ_ζ → ℤ_ζ
 @[simp] theorem conj_b: ∀ z : ℤ_ζ, (conj z).b = - z.b
 | ⟨x, y⟩ := rfl 
 
-@[simp] lemma hom_1(a ai b bi: ℤ): 
+theorem hom_1(a ai b bi: ℤ): 
 (⟨a, ai⟩ + ⟨b, bi⟩ : ℤ_ζ).conj.a = ((⟨a, ai⟩ : ℤ_ζ).conj + (⟨b, bi⟩ : ℤ_ζ).conj).a := 
 begin
      simp*, ring,
 end
 
-/-! map `conj` is an `add_monoid_hom`. -/
+/-- map `conj` is an `add_monoid_hom`. -/
 def conj_hom : ℤ_ζ →+ ℤ_ζ :=
 { to_fun := conj,
   map_add' := λ ⟨a, ai⟩ ⟨b, bi⟩, ext.mpr ⟨hom_1 a ai b bi, neg_add _ _⟩,
@@ -300,13 +298,13 @@ begin
      exact conj_mul,
 end
 
-/-! `conj` as a `monoid_hom`. -/
+/-- `conj` as a `monoid_hom`. -/
 def conj_monoid_hom : ℤ_ζ →* ℤ_ζ :=
 { to_fun := conj,
   map_mul' := conj_mul_0,
   map_one' := conj_one }
 
-/-! norm(x) represents the norm of x -/
+/-- norm(x) represents the norm of x -/
 def norm (n : ℤ_ζ) : ℤ := n.a * n.a - n.a * n.b + n.b * n.b
 lemma norm_def (n : ℤ_ζ) : n.norm = n.a * n.a - n.a * n.b + n.b * n.b := rfl
 
@@ -316,19 +314,16 @@ begin
      rw norm_def, nlinarith,
 end
 
-@[simp] theorem norm_mul_0 : ∀ x y : ℤ_ζ, x.norm * y.norm = (x * y).norm :=
+@[simp] lemma norm_mul (n m : ℤ_ζ) : norm (n * m) = norm n * norm m :=
 begin
-intros x y,
-rw [norm_def x, norm_def y], rw [eql x, eql y, norm_def], simp[ext], ring,
+     rw [eql n, eql m, norm_def, norm_def, norm_def], 
+     simp[ext], ring,
 end
 
 @[simp] lemma norm_zero : norm 0 = 0 := by simp [norm]
 @[simp] lemma norm_one : norm 1 = 1 := by simp [norm]
-@[simp] lemma norm_int_cast (n : ℤ) : norm n = n * n := by simp [norm]
-@[simp] lemma norm_nat_cast (n : ℕ) : norm n = n * n := norm_int_cast n
-
-@[simp] lemma norm_mul (n m : ℤ_ζ) : norm (n * m) = norm n * norm m :=
-by rw norm_mul_0 n m
+theorem norm_int_cast (n : ℤ) : norm n = n * n := by simp [norm]
+theorem norm_nat_cast (n : ℕ) : norm n = n * n := norm_int_cast n
 
 /-- `norm` as a `monoid_hom`. -/
 def norm_monoid_hom : ℤ_ζ →* ℤ :=
@@ -356,16 +351,13 @@ begin
      rw norm_def, rw norm_def, simp[ext], ring, 
 end                                                           
 
-@[simp] lemma norm_nat: ∀ n : ℤ, ∀ x : ℤ_ζ, (of_int n * x).norm = n^2 * x.norm :=
+theorem norm_nat: ∀ n : ℤ, ∀ x : ℤ_ζ, (of_int n * x).norm = n^2 * x.norm :=
 begin
      intros n x,
      have h1: of_int n * x = ⟨n * x.a, n * x.b⟩, by simp[ext],
      rw [h1, norm_def, norm_def],
      simp[ext], ring,
 end
-
-@[simp] lemma norm_nonneg_0 (n : ℤ_ζ) : 0 ≤ n.norm :=
-by exact norm_nonneg n
 
 lemma norm_eq_one_0(a : ℤ) : 0 ≤ a ∧ a ≠ 0 → 0 < a := 
 begin
@@ -387,7 +379,7 @@ end
 lemma smaller_1(n : ℤ) : n ≤ 1 ∧ 0 ≤ n → n = 0 ∨ n = 1 := by omega
 
 
-/-! We prove that ℤ[ζ] is a Euclidean domain in this part. The main task is to show
+/-- We prove that ℤ[ζ] is a Euclidean domain in this part. The main task is to show
 ∀ a b ∈ ℤ[ζ], ∃ q r ∈ ℤ[ζ], a = qb + r, with norm(r) < norm(b). ∀ a b, q is defined
 by function quotient, and r by remainder.-/
 
@@ -434,14 +426,12 @@ end
 
 @[simp] theorem gsmul_zero' : ∀ (a : ℤ_ζ), gsmul_rec 0 a = 0 :=
  begin
-     intro x,
-     rw eql x, try{refl},
+     intro x, rw eql x, try{refl},
 end
 
-@[simp] theorem gsmul_succ': ∀ (n : ℕ) (a : ℤ_ζ), gsmul_rec (int.of_nat n.succ) a = a + gsmul_rec (int.of_nat n) a :=
+theorem gsmul_succ': ∀ (n : ℕ) (a : ℤ_ζ), gsmul_rec (int.of_nat n.succ) a = a + gsmul_rec (int.of_nat n) a :=
 begin
-     intros;
-     try{refl},
+     intros; try{refl},
 end
 
 @[simp] theorem gsmul_neg' : ∀ (n : ℕ) (a : ℤ_ζ), gsmul_rec -[1+ n] a = -gsmul_rec ↑(n.succ) a :=
@@ -501,7 +491,7 @@ begin
      simp[ext], split, ring, ring,
 end
 
-/-! the definition of r in a = bq + r described above-/
+/-- the definition of r in a = bq + r described above-/
 def remainder : ℤ_ζ → ℤ_ζ → ℤ_ζ |  a b := a - b * (quotient a b) 
 
 @[simp] theorem quotient_mul_add_remainder_eq :∀ (a b : ℤ_ζ), b * quotient a b + (remainder a b) = a :=
@@ -524,11 +514,11 @@ begin
      exact int.nat_abs_lt_nat_abs_of_nonneg_of_lt h.1 h.2.2,
 end
 
-/-! Follow the structure definition of Euclidean domain we should define a 
+/-- Follow the structure definition of Euclidean domain we should define a 
 well-founded relation r, s.t. r a b : |a| < |b|, and prove that r (remainder a b)
  b-/
 def f := λ (a : ℤ_ζ), a.norm.nat_abs
-/-! To make use of current results in mathlib, we define f, and use f to define r-/
+/-- To make use of current results in mathlib, we define f, and use f to define r-/
 def r := inv_image nat.lt f
 
 @[simp] theorem r_well_founded : well_founded r :=
@@ -539,7 +529,7 @@ end
 end
 end int_cubic_root
 
-/-! define ℚ_ζ-/
+/-- define ℚ_ζ-/
 structure ra_cubic_root := 
 (c : ℚ)
 (d : ℚ)
@@ -557,7 +547,7 @@ theorem ext : ∀ {z w : ℚ_ζ }, z = w ↔ z.c = w.c ∧ z.d = w.d
 ⟨λ h, by injection h; split; assumption,
                       λ ⟨h₁, h₂⟩, by congr; assumption⟩
 
-
+/-- lift an Eisenstein integer to ℚ[ζ]-/
 def of_eisen_int(x : ℤ_ζ) : ℚ_ζ := ⟨(x.a : ℚ), (x.b : ℚ)⟩ 
 theorem of_eisen_int_def: ∀ x y : ℤ, of_eisen_int ⟨x, y⟩ = ⟨(x : ℚ), (y : ℚ)⟩ := 
 begin
@@ -565,14 +555,14 @@ begin
      try{refl},
 end
 
-/-! zero ∈ ℚ[ζ]-/
+/-- zero ∈ ℚ[ζ]-/
 def zero : ℚ_ζ  := of_eisen_int 0
 instance : has_zero ℚ_ζ := ⟨ra_cubic_root.zero⟩
 theorem zero_c : (0 : ℚ_ζ).c = (0 : ℚ) := rfl 
 theorem zero_d : (0 : ℚ_ζ).d = (0 : ℚ) := rfl
 instance : inhabited (ℚ_ζ) := ⟨0⟩ 
 
-/-! one ∈ ℚ[ζ]-/
+/-- one ∈ ℚ[ζ]-/
 def one : ℚ_ζ := of_eisen_int 1
 instance : has_one (ℚ_ζ) := ⟨ra_cubic_root.one⟩ 
 @[simp] theorem one_c : (1 : (ℚ_ζ)).c = 1 := 
@@ -586,21 +576,21 @@ calc (1 : (ℚ_ζ)).c = (of_eisen_int (1 : ℤ_ζ)).c : rfl
 end
 @[simp] theorem one_d : (1 : (ℚ_ζ)).d = 0 := rfl
 
-/-! representative of ζ in ℚ[ζ], we use ζ0 to emphasize that ζ0 and ζ defined above
+/-- representative of ζ in ℚ[ζ], we use ζ0 to emphasize that ζ0 and ζ defined above
 are two different elements of different types, ℤ[ζ] and ℚ[ζ], and avoid 
 misunderstanding.-/
 def ζ0 : ℚ_ζ := ⟨0, 1⟩  
 @[simp] theorem ζ_c : (ζ0 : (ℚ_ζ)).c = 0 := rfl
 @[simp] theorem ζ_d : (ζ0 : (ℚ_ζ)).d = 1 := rfl
 
-/-! addition in ℚ[ζ]-/
+/-- addition in ℚ[ζ]-/
 def add: (ℚ_ζ) → (ℚ_ζ) → (ℚ_ζ)
 |⟨x, y⟩ ⟨x', y'⟩ := ⟨x + x', y + y'⟩
 instance : has_add ℚ_ζ := ⟨ra_cubic_root.add⟩
 @[simp] theorem add_def(x y x' y' : ℚ) :
    (⟨x, y⟩ + ⟨x', y'⟩ : ℚ_ζ) = ⟨x + x', y + y'⟩ := rfl 
 
-/-! negation in ℚ[ζ]-/
+/-- negation in ℚ[ζ]-/
 def neg : ℚ_ζ → ℚ_ζ
 |⟨x, y⟩ := ⟨-x, -y⟩
 instance : has_neg ℚ_ζ := ⟨ra_cubic_root.neg⟩
@@ -609,11 +599,11 @@ instance : has_neg ℚ_ζ := ⟨ra_cubic_root.neg⟩
 @[simp] theorem neg_d : ∀ z : ℚ_ζ, (-z).d = - z.d 
 |⟨x, y⟩ := rfl 
 
-/-! subtraction in ℚ[ζ]-/
+/-- subtraction in ℚ[ζ]-/
 def sub: ℚ_ζ → (ℚ_ζ) → (ℚ_ζ) := λ a b, a + -b
 instance : has_sub ℚ_ζ := ⟨ra_cubic_root.sub⟩
 
-/-! multiplication in ℚ[ζ]-/
+/-- multiplication in ℚ[ζ]-/
 def mul : ℚ_ζ → ℚ_ζ → ℚ_ζ
 | ⟨x, y⟩ ⟨x', y'⟩ := ⟨x * x' - y * y', x * y' + y * x' - y * y'⟩
 instance : has_mul ℚ_ζ := ⟨ra_cubic_root.mul⟩
@@ -624,7 +614,7 @@ instance : has_mul ℚ_ζ := ⟨ra_cubic_root.mul⟩
 @[simp] theorem mul_d : ∀ z w : ℚ_ζ, (z * w).d = z.c * w.d + z.d * w.c - z.d * w.d
 | ⟨x, y⟩ ⟨x', y'⟩ := rfl
 
-/-! z = ⟨z.a, z.b⟩; notations-/
+/-- z = ⟨z.a, z.b⟩; notations-/
 theorem eql0(z : ℚ_ζ) : z = ⟨z.c, z.d⟩ :=
 begin 
      have h1 : z.c = (⟨z.c, z.d⟩ : ℚ_ζ).c, refl,
@@ -632,7 +622,7 @@ begin
      exact ext.mpr ⟨h1, h2⟩,
 end
 
-/-! norm of x ∈ ℚ[ζ], denoted by norm1-/
+/-- norm of x ∈ ℚ[ζ], denoted by norm1-/
 def norm1 (a : ℚ_ζ) : ℚ := a.c * a.c - a.c * a.d + a.d * a.d
 @[simp] lemma norm1_def (a b : ℚ) : (⟨a, b⟩ : ℚ_ζ).norm1 = a * a - a * b + b * b  := 
 by try {refl}
@@ -710,7 +700,7 @@ begin
              ... < 1                                       : by norm_num,
 end
 
-/-! division in ℚ_ζ-/
+/-- division in ℚ_ζ-/
 def div: ℚ_ζ → ℚ_ζ → ℚ_ζ
 | ⟨x, y⟩ ⟨x', y'⟩ := ⟨(x * x' - x * y' + y * y')/(x'^2 - x' * y' + y'^2), 
                     (-x * y' + x' * y)/(x'^2 - x' * y' + y'^2)⟩ 
@@ -840,7 +830,7 @@ begin
      simp[ext], split, ring, ring,
 end
 
-/- !Combined the theorems above, we have ℚ[ζ] is a commmutative ring, and thus we 
+/-- Combined the theorems above, we have ℚ[ζ] is a commmutative ring, and thus we 
 are able to define a ring homomorphism from ℤ[ζ] to ℚ[ζ] in Lean.-/
 instance : comm_ring ℚ_ζ :=
 by refine_struct
@@ -869,7 +859,7 @@ simp [ext, add_mul, mul_add, add_comm, add_left_comm,
 
 open int_cubic_root 
 
-/-! the ring homomorphism from ℤ[ζ] to ℚ[ζ] is defined as follows-/
+/-- the ring homomorphism from ℤ[ζ] to ℚ[ζ] is defined as follows-/
 @[simp] def lift0: ℤ_ζ →+* ℚ_ζ :=
 { 
   to_fun := λ x, ⟨(x.a : ℚ), (x.b : ℚ)⟩,
@@ -880,7 +870,7 @@ open int_cubic_root
 }
 instance : has_coe (ℤ_ζ) ℚ_ζ := ⟨lift0⟩
 
-/-! The following properties facilitates later calculations.-/
+/-- The following properties facilitates later calculations.-/
 theorem coe_add : ∀ x y : ℤ_ζ, (x : ℚ_ζ) + (y : ℚ_ζ) = (coe(x + y) : ℚ_ζ) := 
 begin
      intros x y,
